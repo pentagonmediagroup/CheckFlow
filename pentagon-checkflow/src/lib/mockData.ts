@@ -1,4 +1,4 @@
-// Services - arrays of strings (service names)
+// Services - arrays of strings
 export const STUDIO_A_SERVICES = [
   'Recording Session',
   'Mixing',
@@ -43,8 +43,11 @@ export const MOCK_CLIENTS = [
     email: 'contact@midnightechoes.com',
     phone: '555-0101',
     totalSessions: 12,
+    total_sessions: 12,
     totalSpend: 3200,
+    total_spend: 3200,
     lastVisit: '2026-04-10',
+    last_visit: '2026-04-10',
   },
   {
     id: 'c2',
@@ -52,8 +55,11 @@ export const MOCK_CLIENTS = [
     email: 'sarah@example.com',
     phone: '555-0102',
     totalSessions: 5,
+    total_sessions: 5,
     totalSpend: 950,
+    total_spend: 950,
     lastVisit: '2026-04-15',
+    last_visit: '2026-04-15',
   },
   {
     id: 'c3',
@@ -61,8 +67,11 @@ export const MOCK_CLIENTS = [
     email: 'neonwave@example.com',
     phone: '555-0103',
     totalSessions: 8,
+    total_sessions: 8,
     totalSpend: 2100,
+    total_spend: 2100,
     lastVisit: '2026-04-18',
+    last_visit: '2026-04-18',
   },
   {
     id: 'c4',
@@ -70,18 +79,23 @@ export const MOCK_CLIENTS = [
     email: 'djpulse@example.com',
     phone: '555-0104',
     totalSessions: 20,
+    total_sessions: 20,
     totalSpend: 5500,
+    total_spend: 5500,
     lastVisit: '2026-04-20',
+    last_visit: '2026-04-20',
   },
 ]
 
-// Sessions — using snake_case field names to match what the app expects
+// Sessions — includes both camelCase and snake_case, plus nested `clients` for Supabase-style joins
 export const MOCK_SESSIONS = [
   {
     id: 's1',
     client_id: 'c1',
+    clientId: 'c1',
     client_name: 'The Midnight Echoes',
     clientName: 'The Midnight Echoes',
+    clients: { id: 'c1', name: 'The Midnight Echoes', email: 'contact@midnightechoes.com' },
     service: 'Recording Session',
     studio: 'A',
     engineer: 'Alex Johnson',
@@ -99,8 +113,10 @@ export const MOCK_SESSIONS = [
   {
     id: 's2',
     client_id: 'c2',
+    clientId: 'c2',
     client_name: 'Sarah Connelly',
     clientName: 'Sarah Connelly',
+    clients: { id: 'c2', name: 'Sarah Connelly', email: 'sarah@example.com' },
     service: 'Vocal Booth',
     studio: 'A',
     engineer: 'Jamie Lee',
@@ -118,8 +134,10 @@ export const MOCK_SESSIONS = [
   {
     id: 's3',
     client_id: 'c3',
+    clientId: 'c3',
     client_name: 'Neon Wave Band',
     clientName: 'Neon Wave Band',
+    clients: { id: 'c3', name: 'Neon Wave Band', email: 'neonwave@example.com' },
     service: 'Band Rehearsal',
     studio: 'B',
     engineer: 'Taylor Brown',
@@ -137,8 +155,10 @@ export const MOCK_SESSIONS = [
   {
     id: 's4',
     client_id: 'c4',
+    clientId: 'c4',
     client_name: 'DJ Pulse',
     clientName: 'DJ Pulse',
+    clients: { id: 'c4', name: 'DJ Pulse', email: 'djpulse@example.com' },
     service: 'Mixing',
     studio: 'A',
     engineer: 'Alex Johnson',
@@ -156,8 +176,10 @@ export const MOCK_SESSIONS = [
   {
     id: 's5',
     client_id: 'c1',
+    clientId: 'c1',
     client_name: 'The Midnight Echoes',
     clientName: 'The Midnight Echoes',
+    clients: { id: 'c1', name: 'The Midnight Echoes', email: 'contact@midnightechoes.com' },
     service: 'Mastering',
     studio: 'B',
     engineer: 'Morgan Smith',
