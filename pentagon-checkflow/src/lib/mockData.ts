@@ -1,19 +1,19 @@
-// Services
+// Services - arrays of strings (service names)
 export const STUDIO_A_SERVICES = [
-  { id: 'sa1', name: 'Recording Session', duration: 60, price: 150 },
-  { id: 'sa2', name: 'Mixing', duration: 120, price: 250 },
-  { id: 'sa3', name: 'Mastering', duration: 90, price: 200 },
-  { id: 'sa4', name: 'Vocal Booth', duration: 60, price: 100 },
+  'Recording Session',
+  'Mixing',
+  'Mastering',
+  'Vocal Booth',
 ]
 
 export const STUDIO_B_SERVICES = [
-  { id: 'sb1', name: 'Recording Session', duration: 60, price: 120 },
-  { id: 'sb2', name: 'Podcast Recording', duration: 60, price: 100 },
-  { id: 'sb3', name: 'Voice Over', duration: 30, price: 75 },
-  { id: 'sb4', name: 'Band Rehearsal', duration: 120, price: 180 },
+  'Recording Session',
+  'Podcast Recording',
+  'Voice Over',
+  'Band Rehearsal',
 ]
 
-export const SERVICE_PRICING = {
+export const SERVICE_PRICING: Record<string, number> = {
   'Recording Session': 150,
   'Mixing': 250,
   'Mastering': 200,
@@ -23,6 +23,12 @@ export const SERVICE_PRICING = {
   'Band Rehearsal': 180,
 }
 
+// Task stages for kanban board
+export const TASK_STAGES = ['To Do', 'In Progress', 'Review', 'Done'] as const
+
+export type TaskStage = typeof TASK_STAGES[number]
+
+// Employees
 export const MOCK_EMPLOYEES = [
   { id: 'e1', name: 'Alex Johnson', role: 'Sound Engineer', studio: 'A', available: true },
   { id: 'e2', name: 'Jamie Lee', role: 'Producer', studio: 'A', available: true },
@@ -30,6 +36,7 @@ export const MOCK_EMPLOYEES = [
   { id: 'e4', name: 'Taylor Brown', role: 'Mastering Engineer', studio: 'B', available: true },
 ]
 
+// Clients
 export const MOCK_CLIENTS = [
   {
     id: 'c1',
@@ -69,6 +76,7 @@ export const MOCK_CLIENTS = [
   },
 ]
 
+// Sessions
 export const MOCK_SESSIONS = [
   {
     id: 's1',
@@ -147,6 +155,7 @@ export const MOCK_SESSIONS = [
   },
 ]
 
+// Payment statuses
 export const PAYMENT_STATUSES = ['paid', 'pending', 'unpaid', 'refunded'] as const
 
 export type PaymentStatus = typeof PAYMENT_STATUSES[number]
