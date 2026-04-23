@@ -1,56 +1,152 @@
-export type Booking = {
-  id: string
-  title: string
-  date: string
-  time: string
-  status: 'pending' | 'confirmed' | 'cancelled'
-  name: string
-  email: string
+// Services
+export const STUDIO_A_SERVICES = [
+  { id: 'sa1', name: 'Recording Session', duration: 60, price: 150 },
+  { id: 'sa2', name: 'Mixing', duration: 120, price: 250 },
+  { id: 'sa3', name: 'Mastering', duration: 90, price: 200 },
+  { id: 'sa4', name: 'Vocal Booth', duration: 60, price: 100 },
+]
+
+export const STUDIO_B_SERVICES = [
+  { id: 'sb1', name: 'Recording Session', duration: 60, price: 120 },
+  { id: 'sb2', name: 'Podcast Recording', duration: 60, price: 100 },
+  { id: 'sb3', name: 'Voice Over', duration: 30, price: 75 },
+  { id: 'sb4', name: 'Band Rehearsal', duration: 120, price: 180 },
+]
+
+export const SERVICE_PRICING = {
+  'Recording Session': 150,
+  'Mixing': 250,
+  'Mastering': 200,
+  'Vocal Booth': 100,
+  'Podcast Recording': 100,
+  'Voice Over': 75,
+  'Band Rehearsal': 180,
 }
 
-export type TimeSlot = {
-  id: string
-  time: string
-  available: boolean
-}
+export const MOCK_EMPLOYEES = [
+  { id: 'e1', name: 'Alex Johnson', role: 'Sound Engineer', studio: 'A', available: true },
+  { id: 'e2', name: 'Jamie Lee', role: 'Producer', studio: 'A', available: true },
+  { id: 'e3', name: 'Morgan Smith', role: 'Mixing Engineer', studio: 'B', available: false },
+  { id: 'e4', name: 'Taylor Brown', role: 'Mastering Engineer', studio: 'B', available: true },
+]
 
-export const mockBookings: Booking[] = [
+export const MOCK_CLIENTS = [
   {
-    id: '1',
-    title: 'Initial Consultation',
+    id: 'c1',
+    name: 'The Midnight Echoes',
+    email: 'contact@midnightechoes.com',
+    phone: '555-0101',
+    totalSessions: 12,
+    totalSpend: 3200,
+    lastVisit: '2026-04-10',
+  },
+  {
+    id: 'c2',
+    name: 'Sarah Connelly',
+    email: 'sarah@example.com',
+    phone: '555-0102',
+    totalSessions: 5,
+    totalSpend: 950,
+    lastVisit: '2026-04-15',
+  },
+  {
+    id: 'c3',
+    name: 'Neon Wave Band',
+    email: 'neonwave@example.com',
+    phone: '555-0103',
+    totalSessions: 8,
+    totalSpend: 2100,
+    lastVisit: '2026-04-18',
+  },
+  {
+    id: 'c4',
+    name: 'DJ Pulse',
+    email: 'djpulse@example.com',
+    phone: '555-0104',
+    totalSessions: 20,
+    totalSpend: 5500,
+    lastVisit: '2026-04-20',
+  },
+]
+
+export const MOCK_SESSIONS = [
+  {
+    id: 's1',
+    clientId: 'c1',
+    clientName: 'The Midnight Echoes',
+    service: 'Recording Session',
+    studio: 'A',
+    engineer: 'Alex Johnson',
+    date: '2026-04-24',
+    startTime: '10:00',
+    endTime: '11:00',
+    duration: 60,
+    price: 150,
+    status: 'confirmed',
+    paymentStatus: 'paid',
+  },
+  {
+    id: 's2',
+    clientId: 'c2',
+    clientName: 'Sarah Connelly',
+    service: 'Vocal Booth',
+    studio: 'A',
+    engineer: 'Jamie Lee',
+    date: '2026-04-24',
+    startTime: '13:00',
+    endTime: '14:00',
+    duration: 60,
+    price: 100,
+    status: 'confirmed',
+    paymentStatus: 'pending',
+  },
+  {
+    id: 's3',
+    clientId: 'c3',
+    clientName: 'Neon Wave Band',
+    service: 'Band Rehearsal',
+    studio: 'B',
+    engineer: 'Taylor Brown',
     date: '2026-04-25',
-    time: '10:00 AM',
+    startTime: '14:00',
+    endTime: '16:00',
+    duration: 120,
+    price: 180,
     status: 'confirmed',
-    name: 'John Smith',
-    email: 'john@example.com',
+    paymentStatus: 'paid',
   },
   {
-    id: '2',
-    title: 'Follow-up Meeting',
+    id: 's4',
+    clientId: 'c4',
+    clientName: 'DJ Pulse',
+    service: 'Mixing',
+    studio: 'A',
+    engineer: 'Alex Johnson',
     date: '2026-04-26',
-    time: '2:00 PM',
+    startTime: '11:00',
+    endTime: '13:00',
+    duration: 120,
+    price: 250,
     status: 'pending',
-    name: 'Jane Doe',
-    email: 'jane@example.com',
+    paymentStatus: 'unpaid',
   },
   {
-    id: '3',
-    title: 'Project Review',
+    id: 's5',
+    clientId: 'c1',
+    clientName: 'The Midnight Echoes',
+    service: 'Mastering',
+    studio: 'B',
+    engineer: 'Morgan Smith',
     date: '2026-04-27',
-    time: '11:00 AM',
+    startTime: '15:00',
+    endTime: '16:30',
+    duration: 90,
+    price: 200,
     status: 'confirmed',
-    name: 'Bob Johnson',
-    email: 'bob@example.com',
+    paymentStatus: 'paid',
   },
 ]
 
-export const mockTimeSlots: TimeSlot[] = [
-  { id: '1', time: '9:00 AM', available: true },
-  { id: '2', time: '10:00 AM', available: false },
-  { id: '3', time: '11:00 AM', available: true },
-  { id: '4', time: '12:00 PM', available: true },
-  { id: '5', time: '1:00 PM', available: false },
-  { id: '6', time: '2:00 PM', available: true },
-  { id: '7', time: '3:00 PM', available: true },
-  { id: '8', time: '4:00 PM', available: false },
-]
+export const PAYMENT_STATUSES = ['paid', 'pending', 'unpaid', 'refunded'] as const
+
+export type PaymentStatus = typeof PAYMENT_STATUSES[number]
