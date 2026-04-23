@@ -25,7 +25,6 @@ export const SERVICE_PRICING: Record<string, number> = {
 
 // Task stages for kanban board
 export const TASK_STAGES = ['To Do', 'In Progress', 'Review', 'Done'] as const
-
 export type TaskStage = typeof TASK_STAGES[number]
 
 // Employees
@@ -76,86 +75,105 @@ export const MOCK_CLIENTS = [
   },
 ]
 
-// Sessions
+// Sessions — using snake_case field names to match what the app expects
 export const MOCK_SESSIONS = [
   {
     id: 's1',
-    clientId: 'c1',
+    client_id: 'c1',
+    client_name: 'The Midnight Echoes',
     clientName: 'The Midnight Echoes',
     service: 'Recording Session',
     studio: 'A',
     engineer: 'Alex Johnson',
     date: '2026-04-24',
+    start_time: '2026-04-24T10:00:00',
+    end_time: '2026-04-24T11:00:00',
     startTime: '10:00',
     endTime: '11:00',
     duration: 60,
     price: 150,
     status: 'confirmed',
+    payment_status: 'paid',
     paymentStatus: 'paid',
   },
   {
     id: 's2',
-    clientId: 'c2',
+    client_id: 'c2',
+    client_name: 'Sarah Connelly',
     clientName: 'Sarah Connelly',
     service: 'Vocal Booth',
     studio: 'A',
     engineer: 'Jamie Lee',
     date: '2026-04-24',
+    start_time: '2026-04-24T13:00:00',
+    end_time: '2026-04-24T14:00:00',
     startTime: '13:00',
     endTime: '14:00',
     duration: 60,
     price: 100,
     status: 'confirmed',
+    payment_status: 'pending',
     paymentStatus: 'pending',
   },
   {
     id: 's3',
-    clientId: 'c3',
+    client_id: 'c3',
+    client_name: 'Neon Wave Band',
     clientName: 'Neon Wave Band',
     service: 'Band Rehearsal',
     studio: 'B',
     engineer: 'Taylor Brown',
     date: '2026-04-25',
+    start_time: '2026-04-25T14:00:00',
+    end_time: '2026-04-25T16:00:00',
     startTime: '14:00',
     endTime: '16:00',
     duration: 120,
     price: 180,
     status: 'confirmed',
+    payment_status: 'paid',
     paymentStatus: 'paid',
   },
   {
     id: 's4',
-    clientId: 'c4',
+    client_id: 'c4',
+    client_name: 'DJ Pulse',
     clientName: 'DJ Pulse',
     service: 'Mixing',
     studio: 'A',
     engineer: 'Alex Johnson',
     date: '2026-04-26',
+    start_time: '2026-04-26T11:00:00',
+    end_time: '2026-04-26T13:00:00',
     startTime: '11:00',
     endTime: '13:00',
     duration: 120,
     price: 250,
     status: 'pending',
+    payment_status: 'unpaid',
     paymentStatus: 'unpaid',
   },
   {
     id: 's5',
-    clientId: 'c1',
+    client_id: 'c1',
+    client_name: 'The Midnight Echoes',
     clientName: 'The Midnight Echoes',
     service: 'Mastering',
     studio: 'B',
     engineer: 'Morgan Smith',
     date: '2026-04-27',
+    start_time: '2026-04-27T15:00:00',
+    end_time: '2026-04-27T16:30:00',
     startTime: '15:00',
     endTime: '16:30',
     duration: 90,
     price: 200,
     status: 'confirmed',
+    payment_status: 'paid',
     paymentStatus: 'paid',
   },
 ]
 
 // Payment statuses
 export const PAYMENT_STATUSES = ['paid', 'pending', 'unpaid', 'refunded'] as const
-
 export type PaymentStatus = typeof PAYMENT_STATUSES[number]
