@@ -1,38 +1,44 @@
 'use client'
 
-import { useAuth } from '@/lib/auth'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
-import Sidebar from './Sidebar'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+
+const navLinks = [
+  { href: '/', label: 'Home' },
+  { href: '/book', label: 'Book' },
+  { href: '/dashboard', label: 'Dashboard' },
+]
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login')
-    }
-  }, [user, loading, router])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0F0A1E' }}>
-        <div className="text-center">
-          <div className="w-12 h-12 rounded-xl mx-auto mb-4 animate-pulse"
-            style={{ background: 'linear-gradient(135deg, #6B21A8, #EAB308)' }} />
-          <p className="text-gray-400 text-sm">Loading...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!user) return null
+  const pathname = usePathname()
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <main className="flex-1 ml-64 min-h-screen" style={{ background: '#0F0A1E' }}>
+    <div className="min-h-screen bg-gray-50">
+      <nav className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16 items-center">
+            <div className="flex items-center space-x-2">
+              <span className="text-xl font-bold text-indigo-600">CheckFlow</span>
+            </div>
+            <div className="flex space-x-6">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`text-sm font-medium transition-colors ${
+                    pathname === link.href
+                      ? 'text-indigo-600 border-b-2 border-indigo-600 pb-1'
+                      : 'text-gray-600 hover:text-indigo-600'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </nav>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
     </div>
