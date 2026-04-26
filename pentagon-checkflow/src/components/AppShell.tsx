@@ -43,8 +43,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           {/* Brand */}
           <div className="flex items-center gap-3 px-3 py-4"
             style={{ borderBottom: '1px solid #1A1F38', minHeight: '70px' }}>
-            <div className="flex-shrink-0 w-11 h-11 rounded-lg overflow-hidden flex items-center justify-center bg-white p-0.5">
-              <Image src="/pentagon-logo.png" alt="The Pentagon" width={40} height={40} style={{ objectFit: 'contain' }} />
+            <div className="flex-shrink-0 w-11 h-11 flex items-center justify-center">
+              <Image src="/pentagon-logo.png" alt="The Pentagon" width={44} height={44} style={{ objectFit: 'contain' }} />
             </div>
             {!collapsed && (
               <div className="overflow-hidden">
@@ -147,8 +147,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             paddingTop: 'env(safe-area-inset-top)',
           }}>
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center bg-white p-0.5">
-              <Image src="/pentagon-logo.png" alt="The Pentagon" width={28} height={28} style={{ objectFit: 'contain' }} />
+            <div className="w-8 h-8 flex items-center justify-center">
+              <Image src="/pentagon-logo.png" alt="The Pentagon" width={32} height={32} style={{ objectFit: 'contain' }} />
             </div>
             <div>
               <div className="text-xs font-bold" style={{ color: '#E8ECF4', fontFamily: 'monospace', letterSpacing: '0.06em' }}>STUDIOFLOW</div>
