@@ -3,154 +3,285 @@
 import AppShell from '@/components/AppShell'
 import { useAuth } from '@/lib/auth'
 import { MOCK_SESSIONS, SERVICE_PRICING } from '@/lib/mockData'
-import { format, isToday, isThisWeek, isThisMonth } from 'date-fns'
-import { CalendarDays, Users, DollarSign, CheckSquare, Clock, ArrowRight } from 'lucide-react'
+import { format, isToday } from 'date-fns'
+import {
+  CalendarDays, Users, DollarSign, CheckSquare,
+  ArrowRight, TrendingUp, Clock, AlertCircle, ArrowUpRight,
+} from 'lucide-react'
 import Link from 'next/link'
 
+// ── helpers ──────────────────────────────────────────────
+const STAGE_COLORS: Record<string, { dot: string; bg: string; text: string }> = {
+  'Setup':              { dot: '#C084FC', bg: 'rgba(192,132,252,0.12)', text: '#C084FC' },
+  'Recording Complete': { dot: '#93C5FD', bg: 'rgba(147,197,253,0.12)', text: '#93C5FD' },
+  'QC Check':           { dot: '#FDE047', bg: 'rgba(253,224,71,0.12)',  text: '#FDE047' },
+  'File Naming':        { dot: '#6EE7B7', bg: 'rgba(110,231,183,0.12)', text: '#6EE7B7' },
+  'Upload':             { dot: '#FCD34D', bg: 'rgba(252,211,77,0.12)',  text: '#FCD34D' },
+  'Editing':            { dot: '#FCA5A5', bg: 'rgba(252,165,165,0.12)', text: '#FCA5A5' },
+  'Ready to Send':      { dot: '#DDD6FE', bg: 'rgba(221,214,254,0.12)', text: '#DDD6FE' },
+  'Delivered':          { dot: '#86EFAC', bg: 'rgba(134,239,172,0.12)', text: '#86EFAC' },
+}
+
+const paymentColor = (status: string) => {
+  if (status === 'Paid in Full')  return { bg: 'rgba(16,185,129,0.12)', text: '#34D399', border: 'rgba(16,185,129,0.25)' }
+  if (status === 'Deposit Paid') return { bg: 'rgba(245,158,11,0.12)', text: '#FBBF24', border: 'rgba(245,158,11,0.25)' }
+  return { bg: 'rgba(239,68,68,0.10)', text: '#F87171', border: 'rgba(239,68,68,0.25)' }
+}
+
+// ── component ─────────────────────────────────────────────
 export default function DashboardPage() {
   const { profile, isOwner } = useAuth()
 
   const upcomingSessions = MOCK_SESSIONS.filter(s => new Date(s.start_time) > new Date())
-  const todaySessions = MOCK_SESSIONS.filter(s => isToday(new Date(s.start_time)))
-  
+  const todaySessions    = MOCK_SESSIONS.filter(s => isToday(new Date(s.start_time)))
+
   const totalRevenue = MOCK_SESSIONS.reduce((acc, s) => {
-    if (s.payment_status === 'Paid in Full') return acc + (SERVICE_PRICING[s.service] || 0)
+    if (s.payment_status === 'Paid in Full')  return acc + (SERVICE_PRICING[s.service] || 0)
     if (s.payment_status === 'Deposit Paid') return acc + (SERVICE_PRICING[s.service] || 0) * 0.5
     return acc
   }, 0)
 
-  const activeTasks = MOCK_SESSIONS.flatMap(s => s.tasks).filter(t => t.status !== 'Delivered')
+  const allTasks   = MOCK_SESSIONS.flatMap(s => (s.tasks ?? []).map(t => ({ ...t, session: s })))
+  const activeTasks = allTasks.filter(t => t.status !== 'Delivered')
+  const readyTasks  = allTasks.filter(t => t.status === 'Ready to Send')
 
+  const unpaidCount = MOCK_SESSIONS.filter(s => s.payment_status === 'Unpaid').length
+
+  // ── stats ──
   const stats = [
-    { label: 'Upcoming Sessions', value: upcomingSessions.length, icon: CalendarDays, color: '#6B21A8' },
-    { label: 'Active Tasks', value: activeTasks.length, icon: CheckSquare, color: '#7C3AED' },
-    { label: 'Total Clients', value: 4, icon: Users, color: '#EAB308' },
-    ...(isOwner ? [{ label: 'Revenue (Est.)', value: `$${totalRevenue.toLocaleString()}`, icon: DollarSign, color: '#22C55E' }] : []),
+    {
+      label: 'Est. Revenue',
+      value: `$${totalRevenue.toLocaleString()}`,
+      icon: DollarSign,
+      accent: '#F59E0B',
+      delta: '+12% vs last mo',
+      deltaUp: true,
+    },
+    {
+      label: 'Upcoming Sessions',
+      value: upcomingSessions.length,
+      icon: CalendarDays,
+      accent: '#8B5CF6',
+      delta: `${todaySessions.length} today`,
+      deltaUp: null,
+    },
+    {
+      label: 'Active Tasks',
+      value: activeTasks.length,
+      icon: CheckSquare,
+      accent: '#06B6D4',
+      delta: `${readyTasks.length} ready to send`,
+      deltaUp: null,
+    },
+    {
+      label: 'Unpaid Sessions',
+      value: unpaidCount,
+      icon: AlertCircle,
+      accent: unpaidCount > 0 ? '#EF4444' : '#10B981',
+      delta: unpaidCount > 0 ? 'Action needed' : 'All clear',
+      deltaUp: unpaidCount === 0,
+    },
   ]
-
-  const getStageColor = (stage: string) => {
-    const map: Record<string, string> = {
-      'Setup': '#C084FC', 'Recording Complete': '#93C5FD', 'QC Check': '#FDE047',
-      'File Naming': '#6EE7B7', 'Upload': '#FCD34D', 'Editing': '#FCA5A5',
-      'Ready to Send': '#DDD6FE', 'Delivered': '#86EFAC',
-    }
-    return map[stage] || '#9CA3AF'
-  }
 
   return (
     <AppShell>
-      <div className="p-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold text-white">
-            Welcome back{profile?.email ? `, ${profile.email.split('@')[0]}` : ''}
-          </h1>
-          <p className="text-gray-400 mt-1">
-            {format(new Date(), 'EEEE, MMMM d, yyyy')} • Studio Operations
-          </p>
+      <div className="p-6 space-y-6" style={{ maxWidth: '1400px' }}>
+
+        {/* ── Header ── */}
+        <div className="flex items-start justify-between pt-2">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-mono tracking-widest px-2 py-0.5 rounded"
+                style={{ background: 'rgba(139,92,246,0.15)', color: '#A78BFA', border: '1px solid rgba(139,92,246,0.3)' }}>
+                OWNER DASHBOARD
+              </span>
+            </div>
+            <h1 className="text-2xl font-bold" style={{ color: '#E8ECF4', letterSpacing: '-0.02em' }}>
+              {profile?.email ? `${profile.email.split('@')[0]}'s Studio` : 'Studio Overview'}
+            </h1>
+            <p className="text-sm mt-0.5" style={{ color: '#4B5563' }}>
+              {format(new Date(), 'EEEE, MMMM d, yyyy')}
+            </p>
+          </div>
+          <Link href="/book"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all hover:brightness-110"
+            style={{ background: 'linear-gradient(135deg, #6D28D9, #7C3AED)', color: '#F59E0B', boxShadow: '0 0 20px rgba(109,40,217,0.3)' }}>
+            <span>+ New Session</span>
+          </Link>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {stats.map(({ label, value, icon: Icon, color }) => (
-            <div key={label} className="rounded-xl p-5"
-              style={{ background: '#1A1030', border: '1px solid #2D1F4E' }}>
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center"
-                  style={{ background: `${color}22` }}>
-                  <Icon size={20} style={{ color }} />
+        {/* ── Stats ── */}
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+          {stats.map(({ label, value, icon: Icon, accent, delta, deltaUp }) => (
+            <div key={label} className="rounded-xl p-5 relative overflow-hidden group"
+              style={{ background: '#111525', border: '1px solid #1E2340' }}>
+              {/* glow */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-xl"
+                style={{ background: `radial-gradient(ellipse at top left, ${accent}08 0%, transparent 70%)` }} />
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center"
+                  style={{ background: `${accent}18`, border: `1px solid ${accent}30` }}>
+                  <Icon size={17} style={{ color: accent }} strokeWidth={2} />
                 </div>
+                <span className="flex items-center gap-1 text-xs font-medium"
+                  style={{ color: deltaUp === true ? '#34D399' : deltaUp === false ? '#F87171' : '#4B5563' }}>
+                  {deltaUp === true && <TrendingUp size={11} />}
+                  {delta}
+                </span>
               </div>
-              <div className="text-2xl font-bold text-white font-display">{value}</div>
-              <div className="text-xs text-gray-500 mt-1">{label}</div>
+              <div className="text-3xl font-bold mb-1" style={{ color: '#E8ECF4', letterSpacing: '-0.03em' }}>
+                {value}
+              </div>
+              <div className="text-xs font-medium" style={{ color: '#4B5563' }}>{label}</div>
             </div>
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Upcoming Sessions */}
-          <div className="rounded-xl" style={{ background: '#1A1030', border: '1px solid #2D1F4E' }}>
-            <div className="px-6 py-4 flex items-center justify-between border-b border-[#2D1F4E]">
-              <h2 className="font-display text-lg font-semibold text-white">Upcoming Sessions</h2>
-              <Link href="/calendar" className="text-xs hover:text-white transition-colors flex items-center gap-1"
-                style={{ color: '#EAB308' }}>
-                View all <ArrowRight size={12} />
+        {/* ── Main grid ── */}
+        <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
+
+          {/* Upcoming Sessions — wider */}
+          <div className="xl:col-span-3 rounded-xl overflow-hidden"
+            style={{ background: '#111525', border: '1px solid #1E2340' }}>
+            <div className="flex items-center justify-between px-5 py-4"
+              style={{ borderBottom: '1px solid #1A1F38' }}>
+              <div className="flex items-center gap-2">
+                <CalendarDays size={15} style={{ color: '#8B5CF6' }} />
+                <h2 className="text-sm font-semibold" style={{ color: '#E8ECF4' }}>Upcoming Sessions</h2>
+                <span className="text-xs px-1.5 py-0.5 rounded font-mono"
+                  style={{ background: 'rgba(139,92,246,0.15)', color: '#A78BFA' }}>
+                  {upcomingSessions.length}
+                </span>
+              </div>
+              <Link href="/calendar" className="flex items-center gap-1 text-xs transition-colors hover:opacity-80"
+                style={{ color: '#F59E0B' }}>
+                Calendar <ArrowRight size={11} />
               </Link>
             </div>
-            <div className="p-4 space-y-3">
+
+            <div className="divide-y" style={{ borderColor: '#1A1F38' }}>
               {upcomingSessions.length === 0 ? (
-                <p className="text-gray-500 text-sm text-center py-6">No upcoming sessions</p>
-              ) : upcomingSessions.map(session => (
-                <Link key={session.id} href={`/sessions/${session.id}`}
-                  className="flex items-center gap-4 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-pointer">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 font-display font-bold text-sm"
-                    style={{ background: session.studio === 'Studio A' ? 'rgba(107,33,168,0.4)' : 'rgba(234,179,8,0.2)', color: session.studio === 'Studio A' ? '#C084FC' : '#FDE047' }}>
-                    {session.studio === 'Studio A' ? 'A' : 'B'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-white truncate">{session.clients.name}</div>
-                    <div className="text-xs text-gray-500 truncate">{session.service}</div>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <div className="text-xs font-medium text-white">{format(new Date(session.start_time), 'MMM d')}</div>
-                    <div className="text-xs text-gray-500">{format(new Date(session.start_time), 'h:mm a')}</div>
-                  </div>
-                </Link>
-              ))}
+                <div className="py-10 text-center text-sm" style={{ color: '#4B5563' }}>No upcoming sessions</div>
+              ) : upcomingSessions.map(session => {
+                const pc = paymentColor(session.payment_status)
+                return (
+                  <Link key={session.id} href={`/sessions/${session.id}`}
+                    className="flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-white/[0.02] group">
+                    {/* Studio pill */}
+                    <div className="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center text-xs font-bold font-mono"
+                      style={session.studio === 'Studio A'
+                        ? { background: 'rgba(139,92,246,0.2)', color: '#A78BFA', border: '1px solid rgba(139,92,246,0.35)' }
+                        : { background: 'rgba(245,158,11,0.15)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.3)' }}>
+                      {session.studio === 'Studio A' ? 'A' : 'B'}
+                    </div>
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold truncate" style={{ color: '#E8ECF4' }}>
+                          {session.clients.name}
+                        </span>
+                        <ArrowUpRight size={12} className="opacity-0 group-hover:opacity-60 transition-opacity flex-shrink-0"
+                          style={{ color: '#8B5CF6' }} />
+                      </div>
+                      <div className="text-xs mt-0.5" style={{ color: '#4B5563' }}>{session.service}</div>
+                    </div>
+                    {/* Payment */}
+                    <span className="text-xs px-2 py-1 rounded-md font-medium flex-shrink-0"
+                      style={{ background: pc.bg, color: pc.text, border: `1px solid ${pc.border}` }}>
+                      {session.payment_status}
+                    </span>
+                    {/* Date */}
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-xs font-semibold" style={{ color: '#E8ECF4' }}>
+                        {format(new Date(session.start_time), 'MMM d')}
+                      </div>
+                      <div className="text-xs mt-0.5 flex items-center gap-1 justify-end" style={{ color: '#4B5563' }}>
+                        <Clock size={10} />
+                        {format(new Date(session.start_time), 'h:mm a')}
+                      </div>
+                    </div>
+                  </Link>
+                )
+              })}
             </div>
-            <div className="px-4 pb-4">
+
+            <div className="px-5 py-3" style={{ borderTop: '1px solid #1A1F38' }}>
               <Link href="/book"
-                className="w-full py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all"
-                style={{ background: 'linear-gradient(135deg, #6B21A8, #4C1D95)', color: '#EAB308' }}>
+                className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all hover:brightness-110"
+                style={{ background: 'rgba(109,40,217,0.2)', color: '#A78BFA', border: '1px solid rgba(109,40,217,0.35)' }}>
                 + Book New Session
               </Link>
             </div>
           </div>
 
-          {/* Active Tasks */}
-          <div className="rounded-xl" style={{ background: '#1A1030', border: '1px solid #2D1F4E' }}>
-            <div className="px-6 py-4 flex items-center justify-between border-b border-[#2D1F4E]">
-              <h2 className="font-display text-lg font-semibold text-white">Active Tasks</h2>
-              <Link href="/tasks" className="text-xs hover:text-white transition-colors flex items-center gap-1"
-                style={{ color: '#EAB308' }}>
-                Pipeline <ArrowRight size={12} />
+          {/* Active Tasks — narrower */}
+          <div className="xl:col-span-2 rounded-xl overflow-hidden"
+            style={{ background: '#111525', border: '1px solid #1E2340' }}>
+            <div className="flex items-center justify-between px-5 py-4"
+              style={{ borderBottom: '1px solid #1A1F38' }}>
+              <div className="flex items-center gap-2">
+                <CheckSquare size={15} style={{ color: '#06B6D4' }} />
+                <h2 className="text-sm font-semibold" style={{ color: '#E8ECF4' }}>Task Pipeline</h2>
+                <span className="text-xs px-1.5 py-0.5 rounded font-mono"
+                  style={{ background: 'rgba(6,182,212,0.12)', color: '#22D3EE' }}>
+                  {activeTasks.length}
+                </span>
+              </div>
+              <Link href="/tasks" className="flex items-center gap-1 text-xs hover:opacity-80 transition-opacity"
+                style={{ color: '#F59E0B' }}>
+                Full board <ArrowRight size={11} />
               </Link>
             </div>
-            <div className="p-4 space-y-3">
-              {MOCK_SESSIONS.map(session => (
-                session.tasks.map(task => (
-                  <div key={task.id} className="flex items-center gap-4 p-3 rounded-lg"
-                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid #2D1F4E' }}>
+
+            <div className="p-3 space-y-2 overflow-y-auto" style={{ maxHeight: '360px' }}>
+              {activeTasks.map(task => {
+                const sc = STAGE_COLORS[task.status] || { dot: '#6B7280', bg: 'rgba(107,114,128,0.12)', text: '#9CA3AF' }
+                return (
+                  <div key={task.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg"
+                    style={{ background: '#0C0F1E', border: '1px solid #1A1F38' }}>
+                    <div className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                      style={{ background: sc.dot, boxShadow: `0 0 6px ${sc.dot}` }} />
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-white truncate">{session.clients.name}</div>
-                      <div className="text-xs text-gray-500">{session.service}</div>
+                      <div className="text-xs font-medium truncate" style={{ color: '#D1D5DB' }}>
+                        {task.session.clients.name}
+                      </div>
+                      <div className="text-xs truncate" style={{ color: '#374151' }}>
+                        {task.session.service}
+                      </div>
                     </div>
-                    <span className="text-xs px-2 py-1 rounded-full font-medium"
-                      style={{ background: `${getStageColor(task.status)}22`, color: getStageColor(task.status) }}>
+                    <span className="text-xs px-2 py-0.5 rounded-md font-medium flex-shrink-0"
+                      style={{ background: sc.bg, color: sc.text }}>
                       {task.status}
                     </span>
                   </div>
-                ))
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="mt-6 grid grid-cols-3 gap-4">
+        {/* ── Quick Actions ── */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'New Booking', href: '/book', icon: CalendarDays },
-            { label: 'Task Pipeline', href: '/tasks', icon: CheckSquare },
-            { label: 'Client List', href: '/clients', icon: Users },
-          ].map(({ label, href, icon: Icon }) => (
+            { label: 'Book Session',   href: '/book',     icon: CalendarDays, accent: '#8B5CF6' },
+            { label: 'Task Pipeline',  href: '/tasks',    icon: CheckSquare,  accent: '#06B6D4' },
+            { label: 'Client List',    href: '/clients',  icon: Users,        accent: '#F59E0B' },
+            { label: 'Revenue Report', href: '/revenue',  icon: DollarSign,   accent: '#10B981' },
+          ].map(({ label, href, icon: Icon, accent }) => (
             <Link key={href} href={href}
-              className="flex items-center gap-3 p-4 rounded-xl text-sm font-medium transition-all hover:border-purple-600"
-              style={{ background: '#1A1030', border: '1px solid #2D1F4E', color: '#D1D5DB' }}>
-              <Icon size={18} style={{ color: '#EAB308' }} />
-              {label}
+              className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all group hover:border-opacity-60"
+              style={{ background: '#111525', border: '1px solid #1E2340', color: '#9CA3AF' }}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
+                style={{ background: `${accent}14`, border: `1px solid ${accent}25` }}>
+                <Icon size={15} style={{ color: accent }} />
+              </div>
+              <span style={{ color: '#D1D5DB' }}>{label}</span>
+              <ArrowRight size={13} className="ml-auto opacity-0 group-hover:opacity-60 transition-opacity"
+                style={{ color: accent }} />
             </Link>
           ))}
         </div>
+
       </div>
     </AppShell>
   )
