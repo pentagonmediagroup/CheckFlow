@@ -23,8 +23,17 @@ export const SERVICE_PRICING: Record<string, number> = {
   'Band Rehearsal': 180,
 }
 
-// Task stages for kanban board
-export const TASK_STAGES = ['To Do', 'In Progress', 'Review', 'Done'] as const
+// Task stages for kanban board — must match STAGE_COLORS keys in tasks/page.tsx
+export const TASK_STAGES = [
+  'Setup',
+  'Recording Complete',
+  'QC Check',
+  'File Naming',
+  'Upload',
+  'Editing',
+  'Ready to Send',
+  'Delivered',
+] as const
 export type TaskStage = typeof TASK_STAGES[number]
 
 // Employees
@@ -92,6 +101,7 @@ export const MOCK_CLIENTS = [
 ]
 
 // Sessions — includes both camelCase and snake_case, plus nested `clients` for Supabase-style joins
+// Each session now includes `tasks` and `deliverables` arrays required by dashboard/page.tsx and tasks/page.tsx
 export const MOCK_SESSIONS = [
   {
     id: 's1',
@@ -101,7 +111,7 @@ export const MOCK_SESSIONS = [
     clientName: 'The Midnight Echoes',
     clients: { id: 'c1', name: 'The Midnight Echoes', email: 'contact@midnightechoes.com' },
     service: 'Recording Session',
-    studio: 'A',
+    studio: 'Studio A',
     engineer: 'Alex Johnson',
     date: '2026-04-24',
     start_time: '2026-04-24T10:00:00',
@@ -111,8 +121,16 @@ export const MOCK_SESSIONS = [
     duration: 60,
     price: 150,
     status: 'confirmed',
-    payment_status: 'paid',
-    paymentStatus: 'paid',
+    payment_status: 'Paid in Full',
+    paymentStatus: 'Paid in Full',
+    deliverables: [
+      { type: 'Vocal Track', quantity: 1 },
+      { type: 'Instrumental Mix', quantity: 2 },
+    ],
+    tasks: [
+      { id: 't1a', status: 'Recording Complete', assigned_to: 'e1' },
+      { id: 't1b', status: 'QC Check', assigned_to: 'e2' },
+    ],
   },
   {
     id: 's2',
@@ -122,7 +140,7 @@ export const MOCK_SESSIONS = [
     clientName: 'Sarah Connelly',
     clients: { id: 'c2', name: 'Sarah Connelly', email: 'sarah@example.com' },
     service: 'Vocal Booth',
-    studio: 'A',
+    studio: 'Studio A',
     engineer: 'Jamie Lee',
     date: '2026-04-24',
     start_time: '2026-04-24T13:00:00',
@@ -132,8 +150,14 @@ export const MOCK_SESSIONS = [
     duration: 60,
     price: 100,
     status: 'confirmed',
-    payment_status: 'pending',
-    paymentStatus: 'pending',
+    payment_status: 'Deposit Paid',
+    paymentStatus: 'Deposit Paid',
+    deliverables: [
+      { type: 'Vocal Recording', quantity: 1 },
+    ],
+    tasks: [
+      { id: 't2a', status: 'Setup', assigned_to: 'e2' },
+    ],
   },
   {
     id: 's3',
@@ -143,7 +167,7 @@ export const MOCK_SESSIONS = [
     clientName: 'Neon Wave Band',
     clients: { id: 'c3', name: 'Neon Wave Band', email: 'neonwave@example.com' },
     service: 'Band Rehearsal',
-    studio: 'B',
+    studio: 'Studio B',
     engineer: 'Taylor Brown',
     date: '2026-04-25',
     start_time: '2026-04-25T14:00:00',
@@ -153,8 +177,15 @@ export const MOCK_SESSIONS = [
     duration: 120,
     price: 180,
     status: 'confirmed',
-    payment_status: 'paid',
-    paymentStatus: 'paid',
+    payment_status: 'Paid in Full',
+    paymentStatus: 'Paid in Full',
+    deliverables: [
+      { type: 'Live Recording', quantity: 1 },
+      { type: 'Stem Files', quantity: 4 },
+    ],
+    tasks: [
+      { id: 't3a', status: 'Editing', assigned_to: 'e4' },
+    ],
   },
   {
     id: 's4',
@@ -164,7 +195,7 @@ export const MOCK_SESSIONS = [
     clientName: 'DJ Pulse',
     clients: { id: 'c4', name: 'DJ Pulse', email: 'djpulse@example.com' },
     service: 'Mixing',
-    studio: 'A',
+    studio: 'Studio A',
     engineer: 'Alex Johnson',
     date: '2026-04-26',
     start_time: '2026-04-26T11:00:00',
@@ -174,8 +205,16 @@ export const MOCK_SESSIONS = [
     duration: 120,
     price: 250,
     status: 'pending',
-    payment_status: 'unpaid',
-    paymentStatus: 'unpaid',
+    payment_status: 'Unpaid',
+    paymentStatus: 'Unpaid',
+    deliverables: [
+      { type: 'Mixed Track', quantity: 1 },
+      { type: 'Reference Mix', quantity: 1 },
+    ],
+    tasks: [
+      { id: 't4a', status: 'File Naming', assigned_to: 'e1' },
+      { id: 't4b', status: 'Upload', assigned_to: 'e1' },
+    ],
   },
   {
     id: 's5',
@@ -185,7 +224,7 @@ export const MOCK_SESSIONS = [
     clientName: 'The Midnight Echoes',
     clients: { id: 'c1', name: 'The Midnight Echoes', email: 'contact@midnightechoes.com' },
     service: 'Mastering',
-    studio: 'B',
+    studio: 'Studio B',
     engineer: 'Morgan Smith',
     date: '2026-04-27',
     start_time: '2026-04-27T15:00:00',
@@ -195,11 +234,19 @@ export const MOCK_SESSIONS = [
     duration: 90,
     price: 200,
     status: 'confirmed',
-    payment_status: 'paid',
-    paymentStatus: 'paid',
+    payment_status: 'Paid in Full',
+    paymentStatus: 'Paid in Full',
+    deliverables: [
+      { type: 'Mastered Track', quantity: 1 },
+      { type: 'WAV Export', quantity: 1 },
+      { type: 'MP3 Export', quantity: 1 },
+    ],
+    tasks: [
+      { id: 't5a', status: 'Ready to Send', assigned_to: 'e3' },
+    ],
   },
 ]
 
 // Payment statuses
-export const PAYMENT_STATUSES = ['paid', 'pending', 'unpaid', 'refunded'] as const
+export const PAYMENT_STATUSES = ['Paid in Full', 'Deposit Paid', 'Unpaid', 'Refunded'] as const
 export type PaymentStatus = typeof PAYMENT_STATUSES[number]
