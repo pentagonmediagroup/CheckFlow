@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --purple: #6B21A8;
+  --purple-light: #7C3AED;
+  --purple-dark: #4C1D95;
+  --gold: #EAB308;
+  --gold-light: #FDE047;
+  --gold-dark: #A16207;
+  --surface: #0F0A1E;
+  --surface-card: #1A1030;
+  --surface-border: #2D1F4E;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--surface);
+  color: white;
+  min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--purple);
+}
+
+/* Gold border accent */
+.gold-border {
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+/* Pentagon clip shape */
+.pentagon-clip {
+  clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+}
+
+/* Drag and drop active state */
+.drag-active {
+  background: rgba(107, 33, 168, 0.2) !important;
+  border-color: var(--gold) !important;
+}
+
+/* Status badge colors */
+.status-setup { background: rgba(107, 33, 168, 0.3); color: #C084FC; }
+.status-recording { background: rgba(59, 130, 246, 0.3); color: #93C5FD; }
+.status-qc { background: rgba(234, 179, 8, 0.3); color: #FDE047; }
+.status-naming { background: rgba(16, 185, 129, 0.3); color: #6EE7B7; }
+.status-upload { background: rgba(245, 158, 11, 0.3); color: #FCD34D; }
+.status-editing { background: rgba(239, 68, 68, 0.3); color: #FCA5A5; }
+.status-ready { background: rgba(139, 92, 246, 0.3); color: #DDD6FE; }
+.status-delivered { background: rgba(34, 197, 94, 0.3); color: #86EFAC; }
+
+@layer utilities {
+  .text-gold { color: var(--gold); }
+  .bg-surface-card { background: var(--surface-card); }
+  .border-surface { border-color: var(--surface-border); }
+}
