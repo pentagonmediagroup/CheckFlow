@@ -344,7 +344,7 @@ export default function CalendarPage() {
           <h1 style={{ fontSize: 24, fontWeight: 700 }}>Studio Calendar</h1>
         </div>
         <button onClick={() => { setAddForm(blankForm); setShowAddForm(true) }} className="btn btn-primary">
-          <Plus size={13} /> + Add Booking
+          <Plus size={13} /> Add Booking
         </button>
       </div>
 
