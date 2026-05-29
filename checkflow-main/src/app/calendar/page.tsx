@@ -78,7 +78,7 @@ export default function CalendarPage() {
     const to   = `${year}-${pad(month+1)}-${pad(daysInMonth(year,month))}`
     const [{ data:ev }, { data:se }, { data:em }] = await Promise.all([
       supabase.from('calendar_events').select('*').gte('date',from).lte('date',to).order('start_time'),
-      supabase.from('sessions').select('id,client_name,session_type,service,start_time,end_time,date,studio,payment_status,employee_1_id,employee_2_id,employee_3_id,notes,status').gte('date',from).lte('date',to).order('date'),
+      supabase.from('sessions').select('id,client_name,session_type,service,start_time,end_time,date,studio,payment_status,cancelled_at,cancellation_reason,employee_1_id,employee_2_id,employee_3_id,notes').gte('date',from).lte('date',to).order('date'),
       supabase.from('employees').select('id,name').order('name'),
     ])
     setEvents(ev||[])
@@ -184,8 +184,8 @@ export default function CalendarPage() {
     const { session } = actionModal
     try {
       await supabase.from('sessions').update({
-        status: 'Cancelled',
-        payment_status: 'Cancelled',
+        cancelled_at: new Date().toISOString(), cancellation_reason: cancelReason,
+        payment_cancelled_at: new Date().toISOString(), cancellation_reason: cancelReason,
         notes: [session.notes, `CANCELLED: ${cancelReason}${cancelNote?` — ${cancelNote}`:''}`].filter(Boolean).join('\n'),
         updated_at: new Date().toISOString(),
       }).eq('id', session.id)
@@ -323,9 +323,9 @@ export default function CalendarPage() {
                 <div style={{ fontSize:12,fontWeight:isToday?700:400,color:isToday?'#EAB308':'#6B7280',width:22,height:22,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:isToday?'rgba(234,179,8,.15)':'transparent',marginBottom:3 }}>{d}</div>
                 {visible.map((item,idx)=>(
                   <div key={idx} onClick={e=>openPopout(e,item)}
-                    style={{ fontSize:10,padding:'2px 5px',borderRadius:4,background:`${item._color}25`,color:item._color,border:`1px solid ${item._color}55`,marginBottom:2,display:'flex',alignItems:'center',gap:3,overflow:'hidden',cursor:'pointer',opacity:item.status==='Cancelled'?.45:1 }}
-                    onMouseEnter={e=>(e.currentTarget.style.opacity=item.status==='Cancelled'?'.6':'.8')}
-                    onMouseLeave={e=>(e.currentTarget.style.opacity=item.status==='Cancelled'?'.45':'1')}>
+                    style={{ fontSize:10,padding:'2px 5px',borderRadius:4,background:`${item._color}25`,color:item._color,border:`1px solid ${item._color}55`,marginBottom:2,display:'flex',alignItems:'center',gap:3,overflow:'hidden',cursor:'pointer',opacity:item.cancelled_at != null || item.payment_status==='Cancelled'?.45:1 }}
+                    onMouseEnter={e=>(e.currentTarget.style.opacity=item.cancelled_at != null || item.payment_status==='Cancelled'?'.6':'.8')}
+                    onMouseLeave={e=>(e.currentTarget.style.opacity=item.cancelled_at != null || item.payment_status==='Cancelled'?'.45':'1')}>
                     {item._isSession&&<div style={{ width:5,height:5,borderRadius:'50%',background:item._color,flexShrink:0 }}/>}
                     <span style={{ overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flex:1 }}>{item._label}</span>
                     {!item._isSession&&(
@@ -360,7 +360,7 @@ export default function CalendarPage() {
               <div style={{ fontSize:14,fontWeight:700,color:'#E8ECF4',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{popout.item._label||popout.item.title}</div>
               <div style={{ fontSize:11,color:popout.item._color,marginTop:2,fontWeight:600 }}>
                 {popout.item._isSession?(popout.item.service||popout.item.session_type):popout.item.event_type}
-                {popout.item.status==='Cancelled'&&<span style={{ marginLeft:6,color:'#F87171' }}>· Cancelled</span>}
+                {popout.item.cancelled_at != null || item.payment_status==='Cancelled'&&<span style={{ marginLeft:6,color:'#F87171' }}>· Cancelled</span>}
               </div>
             </div>
             <button onClick={()=>setPopout(null)} style={{ background:'none',border:'none',color:'#4B5563',cursor:'pointer',padding:2,flexShrink:0,marginLeft:8 }}><X size={14}/></button>
@@ -388,7 +388,7 @@ export default function CalendarPage() {
               </div>
             )}
           </div>
-          {popout.item._isSession&&canEdit&&popout.item.status!=='Cancelled'&&(
+          {popout.item._isSession&&canEdit&&popout.!item.cancelled_at && item.payment_status!=='Cancelled'&&(
             <div style={{ marginTop:12,display:'flex',flexDirection:'column',gap:6 }}>
               <button onClick={()=>openEditSession(popout.item)}
                 style={{ width:'100%',padding:'7px',background:'rgba(139,92,246,.12)',color:'#A78BFA',border:'1px solid rgba(139,92,246,.3)',borderRadius:8,fontSize:12,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:5,fontWeight:600 }}>
@@ -421,12 +421,12 @@ export default function CalendarPage() {
             </div>
             <div style={{ display:'flex',flexDirection:'column',gap:8 }}>
               {dayModal.items.map((item,idx)=>(
-                <div key={idx} style={{ padding:'12px 14px',background:'#0F0A1E',border:`1px solid ${item._color}44`,borderRadius:10,borderLeft:`3px solid ${item._color}`,opacity:item.status==='Cancelled'?.5:1 }}>
+                <div key={idx} style={{ padding:'12px 14px',background:'#0F0A1E',border:`1px solid ${item._color}44`,borderRadius:10,borderLeft:`3px solid ${item._color}`,opacity:item.cancelled_at != null || item.payment_status==='Cancelled'?.5:1 }}>
                   <div style={{ display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:8 }}>
                     <div style={{ flex:1,minWidth:0 }}>
                       <div style={{ fontSize:13,fontWeight:700,color:'#E8ECF4' }}>
                         {item._label}
-                        {item.status==='Cancelled'&&<span style={{ marginLeft:6,fontSize:10,color:'#F87171',fontWeight:400 }}>Cancelled</span>}
+                        {item.cancelled_at != null || item.payment_status==='Cancelled'&&<span style={{ marginLeft:6,fontSize:10,color:'#F87171',fontWeight:400 }}>Cancelled</span>}
                       </div>
                       <div style={{ fontSize:11,color:item._color,marginTop:1 }}>{item._isSession?(item.service||item.session_type):item.event_type}</div>
                       <div style={{ fontSize:11,color:'#6B7280',marginTop:3,display:'flex',alignItems:'center',gap:10,flexWrap:'wrap' }}>
@@ -435,7 +435,7 @@ export default function CalendarPage() {
                         {item._isSession&&item.employee_1_id&&<span>👤 {empName(item.employee_1_id)}</span>}
                       </div>
                     </div>
-                    {item._isSession&&canEdit&&item.status!=='Cancelled'&&(
+                    {item._isSession&&canEdit&&!item.cancelled_at && item.payment_status!=='Cancelled'&&(
                       <div style={{ display:'flex',gap:4,flexShrink:0 }}>
                         <button onClick={()=>openEditSession(item)} title="Edit"
                           style={{ padding:'4px 6px',background:'rgba(139,92,246,.15)',color:'#A78BFA',border:'1px solid rgba(139,92,246,.3)',borderRadius:6,fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',gap:3 }}>
