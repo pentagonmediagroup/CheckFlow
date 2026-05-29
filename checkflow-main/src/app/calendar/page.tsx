@@ -1,4 +1,5 @@
 'use client'
+import React from 'react'
 import { useEffect, useState, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/components/AuthProvider'
@@ -274,7 +275,7 @@ export default function CalendarPage() {
 
   const inp  = { background:'#0F0A1E',border:'1px solid #2D1F4E',borderRadius:12,padding:'12px 14px',fontSize:16,color:'#E8ECF4',width:'100%',outline:'none',fontFamily:'inherit' }
   const sinp = { background:'#0F0A1E',border:'1px solid #2D1F4E',borderRadius:10,padding:'10px 12px',fontSize:14,color:'#E8ECF4',width:'100%',outline:'none',fontFamily:'inherit' }
-  const overlay = { position:'fixed' as const,inset:0,background:'rgba(0,0,0,.85)',zIndex:300,display:'flex',alignItems:'center',justifyContent:'center',padding:24 }
+  const overlay: React.CSSProperties = { position:'fixed',inset:0,background:'rgba(0,0,0,.85)',zIndex:300,display:'flex',alignItems:'center',justifyContent:'center',padding:24 }
 
   return (
     <div style={{ padding:'16px 14px',display:'flex',flexDirection:'column',height:'calc(100dvh - 60px)',overflow:'hidden',position:'relative' }}>
