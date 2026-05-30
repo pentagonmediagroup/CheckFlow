@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/components/AuthProvider';
 import { logAudit } from '@/lib/audit';
 import {
   ChevronLeft, ChevronRight, Plus, X, Clock, MapPin,
