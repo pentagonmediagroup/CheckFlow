@@ -156,9 +156,9 @@ export default function TasksPage() {
   // ── Load data ─────────────────────────────────────────────
   const load = async () => {
     const [{ data:t },{ data:e },{ data:p }] = await Promise.all([
-      supabase.from('tasks').select('*').eq('archived', false).order('created_at'),
+      supabase.from('tasks').select('id,client_name,task_type,stage,pipeline_name,pipeline_id,assigned_to,assigned_staff_ids,assigned_employee_ids,notes,completed_at,archived,archive_after_days').eq('archived', false).order('created_at'),
       supabase.from('employees').select('id,name').order('name'),
-      supabase.from('pipelines').select('*').order('name'),
+      supabase.from('pipelines').select('id,name,stages').order('name'),
     ])
     setTasks(t||[])
     setEmployees(e||[])
