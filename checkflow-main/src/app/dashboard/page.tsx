@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/components/AuthProvider'
@@ -15,48 +15,45 @@ export default function DashboardPage() {
   const [staff, setStaff]       = useState<any[]>([])
   const [kpi, setKpi]           = useState({ collected:0, owed:0, unpaid:0 })
 
-  useEffect(() => {
+  const fetchDashboard = useCallback(async () => {
     const today = new Date().toISOString().split('T')[0]
-    Promise.all([
+    const cfUser = typeof window!=='undefined' ? JSON.parse(localStorage.getItem('cf_user')||'{}') : {}
+    const myId = cfUser?.employee_id
+    const isOwnerRole = cfUser?.role === 'owner'
+
+    const [{ data:se }, { data:ta }, { data:st }, { data:cf }] = await Promise.all([
       supabase.from('sessions').select('id,client_name,session_type,service,studio,date,start_time,payment_status,amount_owed,amount_paid').gte('date',today).order('date').limit(5),
       supabase.from('tasks').select('id,client_name,task_type,stage,assigned_to,assigned_staff_ids,assigned_employee_ids').eq('archived',false).order('created_at').limit(50),
       supabase.from('employees').select('id,name,app_role,available,role').order('name').limit(8),
+      // ✅ KPI query: only fetch the 3 columns needed, no duplication
       supabase.from('sessions').select('amount_owed,amount_paid,late_fee,payment_status'),
-    ]).then(([{data:se},{data:ta},{data:st},{data:cf}])=>{
-      setSessions(se||[])
-      // Filter tasks for employees — only show their assigned tasks
-      const cfUser = typeof window!=='undefined' ? JSON.parse(localStorage.getItem('cf_user')||'{}') : {}
-      const myId = cfUser?.employee_id
-      const isOwnerRole = cfUser?.role === 'owner'
-      const allTasks = ta||[]
-      const filteredTasks = isOwnerRole ? allTasks : allTasks.filter((t:any) =>
-        t.assigned_to === myId ||
-        (t.assigned_staff_ids||[]).includes(myId) ||
-        (t.assigned_employee_ids||[]).includes(myId)
-      )
-      setTasks(filteredTasks)
-      setStaff(st||[])
-      const c=cf||[]
-      setKpi({
-        collected:c.reduce((s:number,r:any)=>s+(r.amount_paid||0),0),
-        owed:c.reduce((s:number,r:any)=>s+Math.max(0,(r.amount_owed||0)-(r.amount_paid||0)+(r.late_fee||0)),0),
-        unpaid:c.filter((r:any)=>r.payment_status==='Balance Due'||r.payment_status==='Deposit Paid').length,
-      })
-    })
+    ])
 
-    // Poll every 30s to keep KPIs fresh (more reliable than realtime on mobile)
-    const interval = setInterval(() => {
-      supabase.from('sessions').select('amount_owed,amount_paid,late_fee,payment_status').then(({ data:cf }) => {
-        const c = cf||[]
-        setKpi({
-          collected: c.reduce((s:number,r:any)=>s+(r.amount_paid||0),0),
-          owed:      c.reduce((s:number,r:any)=>s+Math.max(0,(r.amount_owed||0)-(r.amount_paid||0)+(r.late_fee||0)),0),
-          unpaid:    c.filter((r:any)=>r.payment_status==='Balance Due'||r.payment_status==='Deposit Paid').length,
-        })
-      })
-    }, 30000)
-    return () => clearInterval(interval)
-  },[])
+    setSessions(se||[])
+    const allTasks = ta||[]
+    setTasks(isOwnerRole ? allTasks : allTasks.filter((t:any) =>
+      t.assigned_to === myId ||
+      (t.assigned_staff_ids||[]).includes(myId) ||
+      (t.assigned_employee_ids||[]).includes(myId)
+    ))
+    setStaff(st||[])
+    const c = cf||[]
+    setKpi({
+      collected: c.reduce((s:number,r:any)=>s+(r.amount_paid||0),0),
+      owed:      c.reduce((s:number,r:any)=>s+Math.max(0,(r.amount_owed||0)-(r.amount_paid||0)+(r.late_fee||0)),0),
+      unpaid:    c.filter((r:any)=>r.payment_status==='Balance Due'||r.payment_status==='Deposit Paid').length,
+    })
+  }, [])
+
+  useEffect(() => {
+    fetchDashboard()
+    // ✅ Realtime push instead of 30s polling
+    const channel = supabase.channel('dashboard-live')
+      .on('postgres_changes', { event:'*', schema:'public', table:'sessions' }, fetchDashboard)
+      .on('postgres_changes', { event:'*', schema:'public', table:'tasks' },    fetchDashboard)
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [fetchDashboard])
 
   const today = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'})
 
