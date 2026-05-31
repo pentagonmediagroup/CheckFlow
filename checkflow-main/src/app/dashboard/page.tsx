@@ -48,7 +48,8 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchDashboard()
     // ✅ Realtime push instead of 30s polling
-    const channel = supabase.channel('dashboard-live')
+    // FIX: unique channel name per mount prevents realtime crash
+    const channel = supabase.channel(`dashboard-live-${Date.now()}`)
       .on('postgres_changes', { event:'*', schema:'public', table:'sessions' }, fetchDashboard)
       .on('postgres_changes', { event:'*', schema:'public', table:'tasks' },    fetchDashboard)
       .subscribe()
@@ -67,7 +68,7 @@ export default function DashboardPage() {
           <h1 style={{ fontSize:24,fontWeight:700,color:'#fff',letterSpacing:'-.02em' }}>Studio Overview</h1>
           <p style={{ fontSize:13,color:'#6B7280',marginTop:2 }}>{today}</p>
         </div>
-        <Link href="/book" className="btn btn-primary" style={{ minHeight:44,fontSize:14 }}>⚡ Book Session</Link>
+        <Link href="/book" className="btn btn-primary" style={{ minHeight:44,fontSize:14,whiteSpace:'nowrap' }}>⚡ Book</Link>
       </div>
 
       {/* KPIs — revenue only for owner */}
@@ -121,7 +122,7 @@ export default function DashboardPage() {
                 {(s.client_name||'?').charAt(0)}
               </div>
               <div style={{ flex:1,minWidth:0 }}>
-                <div style={{ fontSize:13,fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{s.client_name}</div>
+                <div style={{ fontSize:13,fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'140px' }}>{s.client_name}</div>
                 <div style={{ fontSize:11,color:'#4B5563',marginTop:1 }}>{s.service||s.session_type} · {s.studio}</div>
               </div>
               <span style={{ fontSize:11,padding:'3px 7px',borderRadius:5,fontWeight:500,flexShrink:0,background:s.payment_status==='Paid in Full'?'rgba(16,185,129,.12)':'rgba(239,68,68,.1)',color:s.payment_status==='Paid in Full'?'#34D399':'#F87171',border:`1px solid ${s.payment_status==='Paid in Full'?'rgba(16,185,129,.25)':'rgba(239,68,68,.25)'}` }}>{s.payment_status}</span>
