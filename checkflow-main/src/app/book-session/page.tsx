@@ -8,17 +8,7 @@ const SERVICES = [
   'Photography','Video Production','Interview'
 ]
 
-const RATES: Record<string, number> = {
-  'Recording Session': 75,
-  'Mixing': 100,
-  'Mastering': 80,
-  'Vocal Booth': 60,
-  'Band Rehearsal': 90,
-  'Podcast': 65,
-  'Photography': 120,
-  'Video Production': 150,
-  'Interview': 65,
-}
+
 
 const DURATIONS = [
   { label: '1 hour',  value: 60  },
@@ -44,9 +34,7 @@ export default function PublicBookingPage() {
 
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }))
 
-  const hourlyRate = RATES[form.service] || 75
-  const totalAmount = (hourlyRate * form.duration) / 60
-  const depositAmount = Math.round(totalAmount * 0.25)
+
 
   // Compute end time
   function getEndTime(date: string, start: string, duration: number) {
@@ -123,10 +111,10 @@ export default function PublicBookingPage() {
         date:           form.date,
         start_time:     startTs,
         end_time:       endTs,
-        total_amount:   totalAmount,
-        amount_owed:    totalAmount,
+        total_amount:   0,
+        amount_owed:    0,
         amount_paid:    0,
-        payment_status: 'Balance Due',
+        payment_status: 'Pending',
         notes:          form.notes,
         booked_via:     'public',
       }).select('id').single()
@@ -245,7 +233,6 @@ export default function PublicBookingPage() {
           ['Date',     new Date(form.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })],
           ['Time',     (() => { const [h,m] = form.start_time.split(':'); const hr = parseInt(h); return `${hr > 12 ? hr - 12 : hr}:${m} ${hr >= 12 ? 'PM' : 'AM'}` })()],
           ['Duration', `${form.duration / 60} hour${form.duration > 60 ? 's' : ''}`],
-          ['Balance Due', `$${totalAmount.toFixed(2)}`],
         ].map(([k, v]) => (
           <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1a1a30', fontSize: 14 }}>
             <span style={{ color: '#6B7280' }}>{k}</span>
@@ -406,22 +393,17 @@ export default function PublicBookingPage() {
               ))}
             </div>
 
-            {/* Balance due notice */}
-            <div style={{ ...card, border: '1px solid rgba(245,166,35,.25)', background: 'rgba(245,166,35,.04)' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#f5a623', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Payment</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div style={{ textAlign: 'center', padding: '14px', background: '#080815', borderRadius: 10 }}>
-                  <div style={{ fontSize: 11, color: '#4B5563', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Session Rate</div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: '#E8ECF4' }}>${totalAmount.toFixed(2)}</div>
-                </div>
-                <div style={{ textAlign: 'center', padding: '14px', background: 'rgba(245,166,35,.08)', borderRadius: 10, border: '1px solid rgba(245,166,35,.2)' }}>
-                  <div style={{ fontSize: 11, color: '#f5a623', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Balance Due</div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: '#f5a623' }}>${totalAmount.toFixed(2)}</div>
+            {/* Pricing handled by team */}
+            <div style={{ ...card, border: '1px solid rgba(124,58,237,.2)', background: 'rgba(124,58,237,.04)' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                <div style={{ fontSize: 22 }}>📞</div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#a78bfa', marginBottom: 4 }}>We'll reach out about pricing</div>
+                  <p style={{ fontSize: 13, color: '#4B5563', margin: 0, lineHeight: 1.6 }}>
+                    Once we receive your request, a team member will contact you to confirm availability and go over rates.
+                  </p>
                 </div>
               </div>
-              <p style={{ fontSize: 12, color: '#374151', margin: '12px 0 0', lineHeight: 1.5 }}>
-                Payment is collected at the studio on the day of your session. We accept cash, Zelle, and Cash App.
-              </p>
             </div>
 
             {form.notes && (
