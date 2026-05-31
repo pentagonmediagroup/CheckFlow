@@ -154,7 +154,7 @@ export default function TasksPage() {
   const [uploadError,   setUploadError]   = useState('')
 
   // ── Load data ─────────────────────────────────────────────
-  const load = async () => {
+  const load = useCallback(async () => {
     const [{ data:t },{ data:e },{ data:p }] = await Promise.all([
       supabase.from('tasks').select('id,client_name,task_type,stage,pipeline_name,pipeline_id,assigned_to,assigned_staff_ids,assigned_employee_ids,notes,completed_at,archived,archive_after_days').eq('archived', false).order('created_at'),
       supabase.from('employees').select('id,name').order('name'),
@@ -168,15 +168,30 @@ export default function TasksPage() {
       if (stages[stages.length-1] !== DONE_STAGE) return { ...p, stages:[...stages, DONE_STAGE] }
       return p
     })
+
+    // FIX: Create synthetic pipeline for tasks with pipeline_id=null (all 33 existing tasks)
+    const orphanTasks = (t||[]).filter((task:any) => !task.pipeline_id)
+    if (orphanTasks.length > 0) {
+      const orphanStages = [...new Set(orphanTasks.map((t:any) => t.stage).filter(Boolean))] as string[]
+      if (orphanStages[orphanStages.length-1] !== DONE_STAGE) orphanStages.push(DONE_STAGE)
+      enriched.unshift({ id: '__orphan__', name: 'All Tasks', stages: orphanStages })
+    }
+
     setPipelines(enriched)
     if (!activePL && enriched.length) setActivePL(enriched[0])
-  }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     load()
     const loaded = getSOPs()
     setSOPs(loaded)
-  }, [])
+    // FIX: Realtime so tasks update live
+    const channel = supabase.channel('tasks-live-' + Date.now())
+      .on('postgres_changes', { event:'*', schema:'public', table:'tasks' }, load)
+      .on('postgres_changes', { event:'*', schema:'public', table:'pipelines' }, load)
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [load])
 
   // ── SOP helpers ───────────────────────────────────────────
   const startSOP = (sop: SOP) => {
@@ -867,7 +882,10 @@ export default function TasksPage() {
           <div style={{ display:'flex',gap:10,overflowX:'auto',paddingBottom:12,flex:1,WebkitOverflowScrolling:'touch' as any }}>
             {stages.map((stage,si)=>{
               const isDone = stage===DONE_STAGE
-              const allStageTasks = tasks.filter(t=>t.stage===stage&&t.pipeline_name===activePL?.name)
+              // FIX: For the synthetic 'All Tasks' pipeline, show all tasks with no pipeline_id
+              const allStageTasks = activePL?.id === '__orphan__'
+                ? tasks.filter(t=>t.stage===stage && !t.pipeline_id)
+                : tasks.filter(t=>t.stage===stage&&t.pipeline_name===activePL?.name)
               const stageTasks = visibleTasks(allStageTasks)
               const color = isDone?'#34D399':COLORS[si%COLORS.length]
 
