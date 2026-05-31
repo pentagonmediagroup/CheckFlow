@@ -33,10 +33,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   useEffect(() => {
-    if (!loading && !user && pathname !== '/login') router.replace('/login')
+    const publicRoutes = ['/login', '/book-session']
+    if (!loading && !user && !publicRoutes.includes(pathname)) router.replace('/login')
   }, [loading, user, pathname])
 
-  if (pathname === '/login') return <>{children}</>
+  if (pathname === '/login' || pathname === '/book-session') return <>{children}</>
   if (loading || !user) return (
     <div style={{minHeight:'100dvh',background:'#080B14',display:'flex',alignItems:'center',justifyContent:'center'}}>
       <StudioFlowLogo size={60}/>
