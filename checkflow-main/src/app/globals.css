@@ -102,18 +102,31 @@ input[type=checkbox]{
   .g2{grid-template-columns:1fr}
   .g3{grid-template-columns:1fr 1fr}
   .g4{grid-template-columns:1fr 1fr}
-  .page-pad{padding:14px 12px}
+  .page-pad{padding:12px 12px}
   .hide-mobile{display:none!important}
   .show-mobile{display:block!important}
 
   /* Larger tap targets on mobile */
   .btn{min-height:48px;font-size:15px}
-  input,select,textarea{padding:13px 14px}
+  input,select,textarea{padding:13px 14px;font-size:16px}
 
   /* Stack action buttons vertically */
   .mobile-stack{flex-direction:column!important}
   .mobile-stack .btn{width:100%}
+
+  /* Tighter cards */
+  .card{border-radius:12px}
+
+  /* Headings */
+  h1{font-size:20px!important}
+
+  /* Modal overlay — always bottom sheet on mobile */
+  .modal-overlay{align-items:flex-end!important;padding:0!important}
+  .modal-sheet{border-radius:18px 18px 0 0!important;border-bottom:none!important;max-height:90dvh!important;overflow-y:auto!important}
 }
+
+/* ── Bottom sheet drag handle ── */
+.drag-handle{width:36px;height:4px;border-radius:2px;background:#2D1F4E;margin:0 auto 14px}
 
 /* ── iPhone safe areas ── */
 @supports(padding:max(0px)){
