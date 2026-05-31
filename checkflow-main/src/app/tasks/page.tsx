@@ -448,13 +448,13 @@ export default function TasksPage() {
   // RENDER
   // ────────────────────────────────────────────────────────────
   return (
-    <div style={{ padding:'28px 24px', minHeight:'100%', display:'flex', flexDirection:'column' }}>
+    <div style={{ padding:'14px 12px', minHeight:'100%', display:'flex', flexDirection:'column' }}>
 
       {/* ── Page header ── */}
       <div style={{ display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:16,flexWrap:'wrap',gap:10 }}>
         <div>
           <div className="page-badge" style={{ background:'rgba(6,182,212,.12)',color:'#22D3EE',border:'1px solid rgba(6,182,212,.25)' }}>TASKS & SOPs</div>
-          <h1 style={{ fontSize:24,fontWeight:700 }}>{tab==='sop' ? 'SOP Center' : 'Task Pipeline'}</h1>
+          <h1 style={{ fontSize:20,fontWeight:700 }}>{tab==='sop' ? 'SOP Center' : 'Task Pipeline'}</h1>
           <p style={{ fontSize:12,color:'#4B5563',marginTop:2 }}>
             {tab==='sop' ? 'Standard Operating Procedures — step-by-step checklists for your studio' : (isLimited ? 'Showing tasks assigned to you' : 'All tasks · Drag to move · Owner-only approval for final stage')}
           </p>
@@ -609,7 +609,7 @@ export default function TasksPage() {
                               if (sp.status==='pending' && !isPrev) {
                                 setNoteModal(step); setStepNote('')
                               }
-                            }} className="btn btn-primary" style={{ minHeight:36,padding:'0 16px',fontSize:13 }}>
+                            }} className="btn btn-primary" style={{ minHeight:44,padding:'0 16px',fontSize:14 }}>
                               ✓ Mark Complete
                             </button>
                             {(activeSOP.allowSkipWithPermission && isOwner) && (
@@ -879,7 +879,7 @@ export default function TasksPage() {
           )}
 
           {/* Kanban board */}
-          <div style={{ display:'flex',gap:10,overflowX:'auto',paddingBottom:12,flex:1,WebkitOverflowScrolling:'touch' as any }}>
+          <div style={{ display:'flex',gap:8,overflowX:'auto',paddingBottom:12,flex:1,WebkitOverflowScrolling:'touch' as any,scrollSnapType:'x mandatory',paddingLeft:2,paddingRight:2 }}>
             {stages.map((stage,si)=>{
               const isDone = stage===DONE_STAGE
               // FIX: For the synthetic 'All Tasks' pipeline, show all tasks with no pipeline_id
@@ -894,7 +894,7 @@ export default function TasksPage() {
                   onDragOver={e=>{e.preventDefault();setDragOver(stage)}}
                   onDragLeave={()=>setDragOver(null)}
                   onDrop={e=>{e.preventDefault();if(dragging)moveTask(dragging,stage);setDragging(null);setDragOver(null)}}
-                  style={{ minWidth:230,flex:'0 0 230px',background:dragOver===stage?'rgba(139,92,246,.05)':'#0C0F1E',border:`1px solid ${dragOver===stage?'rgba(139,92,246,.4)':'#1A1F38'}`,borderRadius:12,display:'flex',flexDirection:'column',overflow:'hidden',transition:'border .15s' }}>
+                  style={{ minWidth:'80vw',maxWidth:280,flex:'0 0 80vw',scrollSnapAlign:'start',background:dragOver===stage?'rgba(139,92,246,.05)':'#0C0F1E',border:`1px solid ${dragOver===stage?'rgba(139,92,246,.4)':'#1A1F38'}`,borderRadius:12,display:'flex',flexDirection:'column',overflow:'hidden',transition:'border .15s' }}>
                   <div style={{ padding:'9px 12px',borderBottom:'1px solid #1A1F38',display:'flex',alignItems:'center',justifyContent:'space-between',borderTop:`3px solid ${color}`,background:isDone?'rgba(16,185,129,.05)':'transparent' }}>
                     <div style={{ display:'flex',alignItems:'center',gap:6 }}>
                       {isDone&&<CheckCircle2 size={13} style={{ color:'#34D399' }}/>}
