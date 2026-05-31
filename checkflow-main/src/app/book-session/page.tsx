@@ -21,12 +21,8 @@ const RATES: Record<string, number> = {
 }
 
 const DURATIONS = [
-  { label: '1 hour',   value: 60  },
-  { label: '2 hours',  value: 120 },
-  { label: '3 hours',  value: 180 },
-  { label: '4 hours',  value: 240 },
-  { label: '5 hours',  value: 300 },
-  { label: '6 hours',  value: 360 },
+  { label: '1 hour',  value: 60  },
+  { label: '2 hours', value: 120 },
 ]
 
 type Step = 'details' | 'datetime' | 'confirm' | 'done'
@@ -98,12 +94,17 @@ export default function PublicBookingPage() {
       const startTs  = `${form.date}T${form.start_time}:00`
       const endTs    = getEndTime(form.date, form.start_time, form.duration)
 
-      // Upsert client
+      // Upsert client — update email/phone if client already exists
       let clientId: string | null = null
       const { data: existing } = await supabase
         .from('clients').select('id').ilike('name', form.name.trim()).maybeSingle()
       if (existing) {
         clientId = existing.id
+        // Update email so the booking confirmation email goes to the right address
+        await supabase.from('clients').update({
+          email: form.email || undefined,
+          phone: form.phone || undefined,
+        }).eq('id', clientId)
       } else {
         const { data: newClient } = await supabase
           .from('clients')
@@ -131,10 +132,10 @@ export default function PublicBookingPage() {
       }).select('id').single()
       if (error) throw error
 
-      // Calendar event
+      // Calendar event — must match exact calendar_events columns
       await supabase.from('calendar_events').insert({
         title:       `${form.name.trim()} – ${form.service}`,
-        description: form.notes,
+        notes:       form.notes || null,
         start_time:  startTs,
         end_time:    endTs,
         event_type:  'Session',
@@ -142,6 +143,7 @@ export default function PublicBookingPage() {
         session_id:  session!.id,
         date:        form.date,
         color:       studio === 'Studio A' ? '#8B5CF6' : '#06B6D4',
+        assigned_to: null,
       })
 
       // Task
@@ -312,7 +314,7 @@ export default function PublicBookingPage() {
 
             <div style={card}>
               <div style={{ fontSize: 13, fontWeight: 700, color: '#f5a623', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Duration</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, maxWidth: 280 }}>
                 {DURATIONS.map(d => (
                   <button key={d.value} type="button" onClick={() => set('duration', d.value)} style={{
                     padding: '12px 8px', borderRadius: 12, fontSize: 13, fontWeight: form.duration === d.value ? 700 : 400,
