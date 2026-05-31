@@ -187,7 +187,19 @@ export default function CalendarPage() {
     const dateStr = `${year}-${pad(month+1)}-${pad(day)}`;
     const evs = calEvents
       .filter(e => (e.date ? String(e.date).slice(0,10) : isoDate(e.start_time)) === dateStr)
-      .map(e => ({ ...e, _isSession:false, _color: e.color || EVENT_COLORS[e.event_type] || '#8B5CF6', _label: e.title }));
+      .map(e => ({
+        ...e,
+        // FIX: calendar_events linked to a session ARE bookings — treat them as sessions
+        // so Edit/Reschedule/Cancel buttons appear in the popup
+        _isSession: !!e.session_id,
+        _color: e.color || (e.session_id ? (e.studio === 'Studio B' ? '#06B6D4' : '#8B5CF6') : EVENT_COLORS[e.event_type]) || '#8B5CF6',
+        _label: e.title,
+        // For edit form: extract client_name from title (format: "Client – Service")
+        client_name: e.session_id ? (e.title || '').split(' – ')[0].replace(/^[🔄❌]\s*/,'').trim() : undefined,
+        service: e.session_id ? (e.title || '').split(' – ').slice(1).join(' – ').trim() || e.event_type : undefined,
+        // The session_id IS the sessions.id — use it for edits
+        _session_id: e.session_id || null,
+      }));
     const sess = sessions
       .filter(s => (s.date ? String(s.date).slice(0,10) : isoDate(s.start_time)) === dateStr)
       .map(s => ({ ...s, _isSession:true, _color: STUDIO_COLORS[s.studio] || '#8B5CF6', _label: s.client_name }));
@@ -215,9 +227,17 @@ export default function CalendarPage() {
   /* ── edit session ────────────────────────────────────────── */
   function openEdit(item: any) {
     setPopup(null); setOverflowDay(null);
+    // FIX: If this item came from calEvents (has _session_id), the sessions.id
+    // is _session_id — not item.id (which is the calendar_events.id).
+    // handleSaveEdit updates sessions WHERE id = editForm.id, so we must pass
+    // the session's UUID, not the calendar_event's UUID.
+    const sessionId = item._session_id || item.id;
+    const clientName = item.client_name || (item.title || '').split(' – ')[0].replace(/^[🔄❌]\s*/,'').trim() || '';
+    const service = item.service || item.session_type || (item.title || '').split(' – ').slice(1).join(' – ').trim() || 'Recording Session';
     setEditForm({
-      id: item.id, client_name: item.client_name || '',
-      service: item.service || item.session_type || 'Recording Session',
+      id: sessionId,
+      client_name: clientName,
+      service,
       studio: item.studio || 'Studio A',
       date: item.date ? String(item.date).slice(0,10) : isoDate(item.start_time||''),
       start_time: timeOnly(item.start_time||''), end_time: timeOnly(item.end_time||''),
@@ -262,8 +282,12 @@ export default function CalendarPage() {
     setPopup(null); setOverflowDay(null);
     setCancelReason('Client Cancelled'); setCancelNotes('');
     setReschedDate(''); setReschedStart(timeOnly(item.start_time||'')); setReschedEnd(timeOnly(item.end_time||''));
-    setReschedStudio(item.studio || 'Studio A'); // ✅ pre-fill with current studio, allow changing
-    setCancelCtx({ type, session: item });
+    setReschedStudio(item.studio || 'Studio A');
+    // FIX: if item came from calEvents, _session_id is the real sessions.id
+    const sessionId = item._session_id || item.id;
+    const clientName = item.client_name || (item.title||'').split(' – ')[0].trim() || '';
+    const service = item.service || item.session_type || (item.title||'').split(' – ').slice(1).join(' – ').trim() || '';
+    setCancelCtx({ type, session: { ...item, id: sessionId, client_name: clientName, service } });
   }
 
   async function handleCancel() {
