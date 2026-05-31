@@ -59,7 +59,7 @@ const INP: React.CSSProperties = {
 const INP_LG: React.CSSProperties = { ...INP, borderRadius:12, padding:'12px 14px', fontSize:16 };
 const OVERLAY: React.CSSProperties = {
   position:'fixed', inset:0, background:'rgba(0,0,0,.85)', zIndex:300,
-  display:'flex', alignItems:'center', justifyContent:'center', padding:24,
+  display:'flex', alignItems:'flex-end', justifyContent:'center', padding:0,
 };
 const NAV_BTN: React.CSSProperties = {
   width:32, height:32, background:'#1A1030', border:'1px solid #2D1F4E',
@@ -373,13 +373,13 @@ export default function CalendarPage() {
      JSX
   ════════════════════════════════════════════════════════════ */
   return (
-    <div style={{padding:'16px 14px',display:'flex',flexDirection:'column',height:'calc(100dvh - 60px)',overflow:'hidden',position:'relative'}}>
+    <div style={{padding:'12px 10px',display:'flex',flexDirection:'column',height:'calc(100dvh - 60px)',overflow:'hidden',position:'relative'}}>
 
       {/* header */}
       <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:12,flexWrap:'wrap',gap:10,flexShrink:0}}>
         <div>
           <div className="page-badge" style={{background:'rgba(139,92,246,.15)',color:'#A78BFA',border:'1px solid rgba(139,92,246,.3)'}}>CALENDAR</div>
-          <h1 style={{fontSize:24,fontWeight:700}}>Studio Calendar</h1>
+          <h1 style={{fontSize:20,fontWeight:700}}>Studio Calendar</h1>
         </div>
         <button onClick={()=>{setAddForm({title:'',date:'',start_time:'',end_time:'',event_type:'General',studio:'N/A',assigned_to:'',description:''});setAddOpen(true);}} className="btn btn-primary">
           <Plus size={13}/> Add Booking
@@ -387,9 +387,9 @@ export default function CalendarPage() {
       </div>
 
       {/* nav bar */}
-      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10,flexShrink:0,flexWrap:'wrap'}}>
+      <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:8,flexShrink:0,flexWrap:'wrap'}}>
         <button onClick={()=>month===0?(setMonth(11),setYear(y=>y-1)):setMonth(m=>m-1)} style={NAV_BTN}><ChevronLeft size={15}/></button>
-        <span style={{fontSize:18,fontWeight:700,minWidth:150,textAlign:'center'}}>{monthName} {year}</span>
+        <span style={{fontSize:16,fontWeight:700,minWidth:130,textAlign:'center'}}>{monthName} {year}</span>
         <button onClick={()=>month===11?(setMonth(0),setYear(y=>y+1)):setMonth(m=>m+1)} style={NAV_BTN}><ChevronRight size={15}/></button>
         <button onClick={()=>{setMonth(today.getMonth());setYear(today.getFullYear());}} style={{padding:'5px 12px',background:'rgba(139,92,246,.12)',color:'#A78BFA',border:'1px solid rgba(139,92,246,.3)',borderRadius:8,fontSize:12,cursor:'pointer'}}>Today</button>
 
@@ -415,7 +415,7 @@ export default function CalendarPage() {
         <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',flex:1,overflowY:'auto'}}>
           {/* empty leading cells */}
           {Array.from({length:firstDow(year,month)}).map((_,i)=>(
-            <div key={`p${i}`} style={{borderRight:'1px solid #1A1F38',borderBottom:'1px solid #1A1F38',background:'rgba(0,0,0,.15)',minHeight:90}}/>
+            <div key={`p${i}`} style={{borderRight:'1px solid #1A1F38',borderBottom:'1px solid #1A1F38',background:'rgba(0,0,0,.15)',minHeight:70}}/>
           ))}
 
           {/* day cells */}
@@ -430,7 +430,7 @@ export default function CalendarPage() {
             return (
               <div key={day}
                 onClick={()=>{setAddForm(f=>({...f,date:dateStr}));setAddOpen(true);}}
-                style={{borderRight:'1px solid #1A1F38',borderBottom:'1px solid #1A1F38',padding:5,cursor:'pointer',minHeight:90,transition:'background .1s'}}
+                style={{borderRight:'1px solid #1A1F38',borderBottom:'1px solid #1A1F38',padding:'4px 3px',cursor:'pointer',minHeight:70,transition:'background .1s'}}
                 onMouseEnter={e=>e.currentTarget.style.background='rgba(139,92,246,.04)'}
                 onMouseLeave={e=>e.currentTarget.style.background='transparent'}
               >
@@ -471,10 +471,13 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      {/* ── popup ─────────────────────────────────────────────── */}
+      {/* ── popup — full bottom sheet on mobile ───────────────── */}
       {popup && (
-        <div ref={popupRef} style={{position:'fixed',left:popup.x,top:popup.y,width:284,background:'#1A1030',border:`2px solid ${popup.item._color}66`,borderRadius:14,boxShadow:'0 8px 32px rgba(0,0,0,.6)',zIndex:200,padding:16}}>
-          <div style={{position:'absolute',top:0,left:0,right:0,height:3,background:popup.item._color,borderRadius:'14px 14px 0 0'}}/>
+        <>
+          <div onClick={()=>setPopup(null)} style={{position:'fixed',inset:0,zIndex:199,background:'rgba(0,0,0,.5)'}}/>
+          <div ref={popupRef} style={{position:'fixed',bottom:0,left:0,right:0,maxWidth:480,margin:'0 auto',background:'#1A1030',border:`2px solid ${popup.item._color}66`,borderRadius:'18px 18px 0 0',boxShadow:'0 -8px 32px rgba(0,0,0,.6)',zIndex:200,padding:'20px 18px 32px',maxHeight:'75dvh',overflowY:'auto'}}>
+          <div style={{width:36,height:4,borderRadius:2,background:'#2D1F4E',margin:'0 auto 14px',flexShrink:0}}/>
+          <div style={{position:'absolute',top:0,left:0,right:0,height:3,background:popup.item._color,borderRadius:'18px 18px 0 0'}}/>
           <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:10,marginTop:4}}>
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontSize:14,fontWeight:700,color:'#E8ECF4',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{popup.item._label||popup.item.title}</div>
@@ -510,12 +513,13 @@ export default function CalendarPage() {
           </div>
           <PopupActions item={popup.item}/>
         </div>
+        </>
       )}
 
       {/* ── overflow day modal ─────────────────────────────────── */}
       {overflowDay && (
         <div style={OVERLAY} onClick={()=>setOverflowDay(null)}>
-          <div className="card" style={{padding:24,width:'100%',maxWidth:480,maxHeight:'80vh',overflowY:'auto'}} onClick={e=>e.stopPropagation()}>
+          <div className="card" style={{padding:'20px 16px',width:'100%',maxWidth:480,maxHeight:'85dvh',overflowY:'auto',borderRadius:'18px 18px 0 0',borderBottom:'none'}} onClick={e=>e.stopPropagation()}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
               <h3 style={{fontSize:15,fontWeight:700,color:'#E8ECF4'}}>{fmtDate(overflowDay.date)} — {overflowDay.items.length} booking{overflowDay.items.length!==1?'s':''}</h3>
               <button onClick={()=>setOverflowDay(null)} style={{background:'none',border:'none',color:'#6B7280',cursor:'pointer'}}><X size={18}/></button>
@@ -556,7 +560,7 @@ export default function CalendarPage() {
       {/* ── edit session modal ────────────────────────────────── */}
       {editSession && (
         <div style={OVERLAY} onClick={()=>setEditSession(null)}>
-          <div className="card" style={{padding:24,width:'100%',maxWidth:560,maxHeight:'90vh',overflowY:'auto'}} onClick={e=>e.stopPropagation()}>
+          <div className="card" style={{padding:'20px 16px',width:'100%',maxWidth:560,maxHeight:'90dvh',overflowY:'auto',borderRadius:'18px 18px 0 0',borderBottom:'none'}} onClick={e=>e.stopPropagation()}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
               <div>
                 <h3 style={{fontSize:16,fontWeight:700,color:'#A78BFA'}}>Edit Booking</h3>
@@ -620,7 +624,7 @@ export default function CalendarPage() {
       {/* ── cancel modal ──────────────────────────────────────── */}
       {cancelCtx?.type==='cancel' && (
         <div style={OVERLAY} onClick={()=>setCancelCtx(null)}>
-          <div className="card" style={{padding:24,width:'100%',maxWidth:440}} onClick={e=>e.stopPropagation()}>
+          <div className="card" style={{padding:'20px 16px',width:'100%',maxWidth:440,borderRadius:'18px 18px 0 0',borderBottom:'none'}} onClick={e=>e.stopPropagation()}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
               <div>
                 <h3 style={{fontSize:16,fontWeight:700,color:'#F87171'}}>Cancel Booking</h3>
@@ -656,7 +660,7 @@ export default function CalendarPage() {
       {/* ── reschedule modal ──────────────────────────────────── */}
       {cancelCtx?.type==='reschedule' && (
         <div style={OVERLAY} onClick={()=>setCancelCtx(null)}>
-          <div className="card" style={{padding:24,width:'100%',maxWidth:440}} onClick={e=>e.stopPropagation()}>
+          <div className="card" style={{padding:'20px 16px',width:'100%',maxWidth:440,borderRadius:'18px 18px 0 0',borderBottom:'none'}} onClick={e=>e.stopPropagation()}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
               <div>
                 <h3 style={{fontSize:16,fontWeight:700,color:'#22D3EE'}}>Reschedule Booking</h3>
@@ -698,7 +702,7 @@ export default function CalendarPage() {
       {/* ── add booking modal ─────────────────────────────────── */}
       {addOpen && (
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',zIndex:100,display:'flex',alignItems:'center',justifyContent:'center',padding:24}} onClick={()=>setAddOpen(false)}>
-          <div className="card" style={{padding:24,width:'100%',maxWidth:520,maxHeight:'90vh',overflowY:'auto'}} onClick={e=>e.stopPropagation()}>
+          <div className="card" style={{padding:'20px 16px',width:'100%',maxWidth:520,maxHeight:'90dvh',overflowY:'auto',borderRadius:'18px 18px 0 0',borderBottom:'none'}} onClick={e=>e.stopPropagation()}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
               <h3 style={{fontSize:16,fontWeight:700,color:'#EAB308'}}>{addForm.date?`Add Booking — ${addForm.date}`:'Add Booking'}</h3>
               <button onClick={()=>setAddOpen(false)} style={{background:'none',border:'none',color:'#6B7280',cursor:'pointer'}}><X size={18}/></button>
